@@ -1,6 +1,7 @@
 package android.example.com.coolweather;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -67,7 +68,6 @@ public class ChooseAreaFragment extends Fragment {
         listView.setAdapter(adapter);
         return view;
     }
-
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -80,6 +80,14 @@ public class ChooseAreaFragment extends Fragment {
                 }else if (currentLevel==LEVEL_CITY){
                     selectedCity=cityList.get(position);
                     queryCounties();
+                }else if(currentLevel==LEVEL_COUNTY){
+                    int ids=countyList.get(position).getId();
+                  //  String weatherId=countyList.get(position).getWeatherId();
+                    Intent intent=new Intent(getActivity(),WeatherActivity.class);
+                  //  intent.putExtra("weather_id",weatherId);
+                    intent.putExtra("weather_id",ids);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
@@ -146,8 +154,9 @@ public class ChooseAreaFragment extends Fragment {
             listView.setSelection(0);
             currentLevel=LEVEL_COUNTY;
         }else {
+            int provinceCode=selectedProvince.getProvinceCode();
             int cityCode=selectedCity.getCityCode();
-            String address="http://guolin.tech/api/china/"+selectedProvince.getProvinceCode()+"/"+cityCode;
+            String address="http://guolin.tech/api/china/"+provinceCode+"/"+cityCode;
             queryFromServer(address,"county");
         }
     }
@@ -171,7 +180,7 @@ public class ChooseAreaFragment extends Fragment {
                 String responseText=response.body().string();
                 boolean result=false;
                 if("province".equals(type))
-                    result=Utility.hangProvinceResponse(responseText);
+                    result=Utility.handleProvinceResponse(responseText);
                 else if ("city".equals(type))
                     result=Utility.handleCityResponse(responseText,selectedProvince.getId());
                 else if("county".equals(type))
